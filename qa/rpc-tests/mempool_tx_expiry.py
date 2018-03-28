@@ -56,7 +56,6 @@ class MempoolTxExpiryTest(BitcoinTestFramework):
                 break;
         inputs = [{'txid': firstTx, 'vout': vout['n'], 'scriptPubKey': vout['scriptPubKey']['hex']}]
         outputs = {alice2: 0.1}
-        privkey = self.nodes[0].dumpprivkey(alice2)
         rawTx = self.nodes[0].createrawtransaction(inputs, outputs)
         rawTxSigned = self.nodes[0].signrawtransaction(rawTx)
         assert(rawTxSigned['complete'])
@@ -83,15 +82,12 @@ class MempoolTxExpiryTest(BitcoinTestFramework):
         wait_and_assert_operationid_status(self.nodes[0], res['opid'])
         self.nodes[0].generate(1)
         self.sync_all()
-        
         # Get balance on node 0
         bal = self.nodes[0].z_gettotalbalance()
         print "Balance before zsend, after shielding 10: ", bal
         assert_equal(Decimal(bal["private"]), Decimal("9.9999"))
-        
         print "Splitting network..."
         self.split_network()
-        
         # Create transactions
         blockheight = self.nodes[0].getblockchaininfo()['blocks']
         zsendamount = Decimal('1.0') - Decimal('0.0001')
@@ -156,10 +152,8 @@ class MempoolTxExpiryTest(BitcoinTestFramework):
         self.nodes[0].generate(1)
         assert_equal(set(self.nodes[0].getrawmempool()), set())
         sync_blocks(self.nodes)
-        
         print "Splitting network..."
         self.split_network()
-        
         print "\n Blockheight advances to equal expiry block height. After reorg, txs should persist in mempool"
         myopid = self.nodes[0].z_sendmany(z_alice, recipients)
         persist_shielded_2 = wait_and_assert_operationid_status(self.nodes[0], myopid)
